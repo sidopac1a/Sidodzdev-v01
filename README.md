@@ -1,21 +1,26 @@
-# Sidozdev - USB Bootable Media Creator
+# Sidozdev - USB Bootable Media Creator 
 
 A professional, open-source USB bootable media creation tool built with Rust. Sidozdev is a modern alternative to Rufus, designed for creating bootable USB drives from ISO images with full support for Windows 10 and Windows 11.
 
 ## Features
 
-- **USB Device Detection**: Automatic enumeration of all connected USB storage devices
-- **Multi-Format Support**: ISO9660, Hybrid ISO, and IMG files
-- **Boot Modes**: BIOS Legacy, UEFI, and UEFI + Secure Boot
-- **Partition Schemes**: MBR and GPT
-- **File Systems**: FAT32, NTFS, exFAT
-- **Hash Verification**: MD5, SHA1, SHA256 for ISO integrity checking
-- **Real-time Progress**: Live progress bar with speed and ETA
-- **Detailed Logging**: Comprehensive operation logs with export capability
-- **Safe Cancellation**: Graceful operation cancellation
-- **Write Verification**: Post-write data integrity verification
-- **Dark/Light Themes**: Full theme support
-- **Multi-language**: Arabic and English support
+✨ Key Features
+
+🟢 Automatic USB Detection
+
+🔵 ISO / IMG Support
+
+🟣 UEFI & Secure Boot
+
+🟠 GPT & MBR Support
+
+🔴 SHA256 Integrity Verification
+
+🟡 Real-Time Progress Monitoring
+
+⚫ Advanced Logging System
+
+🟤 Multi-language Support (Arabic / English)
 
 ## Architecture
 
@@ -125,10 +130,51 @@ Contributions are welcome! Please read our contributing guidelines and submit pu
 - GUI powered by [egui](https://github.com/emilk/egui)
 - Inspired by [Rufus](https://rufus.ie/)
 
-## Support
-
-For issues, feature requests, or questions, please visit our [GitHub Issues](https://github.com/sidozdev/sidozdev/issues) page.
-
 ---
+## Project Status
+
+Component
+
+Status
+
+USB Detection
+
+🟢 Stable
+
+ISO Parser
+
+🟢 Stable
+
+Disk Writer
+
+🟡 Development
+
+Verification Engine
+
+🟡 Development
+
+GUI Interface
+
+🟢 Stable
+
+Multi-ISO Support
+
+🔴 Planned
+
+🛡️ Security First
+
+✅ Device validation before write operations
+
+✅ Post-write verification
+
+✅ Detailed operation logging
+
+✅ Safe cancellation support
+
+✅ Protection against accidental disk selection
+
+🚀 Built with Rust. Designed for Professionals.
+
+Sidozdev • Reliable • Modern • Fast
 
 **Sidozdev** - Professional USB bootable media creation, reimagined in Rust.
