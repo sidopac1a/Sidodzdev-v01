@@ -1,0 +1,88 @@
+[package]
+name = "sidozdev"
+version = "1.0.0"
+edition = "2021"
+authors = ["Sidozdev Team <team@sidozdev.org>"]
+description = "Professional USB bootable media creation tool - Rufus alternative"
+license = "MIT"
+repository = "https://github.com/sidozdev/sidozdev"
+keywords = ["usb", "bootable", "iso", "rufus", "windows"]
+categories = ["command-line-utilities", "os::windows-apis"]
+rust-version = "1.75"
+
+[workspace]
+members = ["."]
+
+[dependencies]
+# Core async runtime
+tokio = { version = "1.35", features = ["full", "rt-multi-thread"] }
+
+# GUI Framework - egui (cross-platform, simpler than Qt)
+eframe = { version = "0.24", features = ["default"] }
+egui = "0.24"
+egui_extras = { version = "0.24", features = ["image", "svg"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Async utilities
+futures = "0.3"
+async-trait = "0.1"
+
+# Hashing
+md-5 = "0.10"
+sha1 = "0.10"
+sha2 = "0.10"
+hex = "0.4"
+
+# File I/O
+memmap2 = "0.9"
+
+# Windows APIs
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.52", features = [
+    "Win32_Foundation",
+    "Win32_Storage_FileSystem",
+    "Win32_System_IO",
+    "Win32_System_Threading",
+    "Win32_System_SystemInformation",
+    "Win32_Devices_DeviceAndDriverInstallation",
+    "Win32_Devices_Usb",
+    "Win32_Security",
+    "Win32_System_WindowsProgramming",
+    "Win32_System_Power",
+    "Win32_UI_Shell",
+    "Win32_Globalization",
+] }
+winapi = { version = "0.3", features = ["setupapi", "cfgmgr32", "fileapi", "handleapi", "ioapiset", "winioctl", "winbase", "winnt", "ntdef"] }
+
+# Cross-platform utilities
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+# Build dependencies
+[build-dependencies]
+winres = "0.1"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.dev]
+opt-level = 1
+
+[[bin]]
+name = "sidozdev"
+path = "src/main.rs"

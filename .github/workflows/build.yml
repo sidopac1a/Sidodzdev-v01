@@ -1,0 +1,53 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: dtolnay/rust-action@stable
+      with:
+        toolchain: stable
+        components: rustfmt, clippy
+
+    - name: Cache Cargo
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Check Formatting
+      run: cargo fmt -- --check
+
+    - name: Run Clippy
+      run: cargo clippy --all-targets --all-features -- -D warnings
+
+    - name: Build Debug
+      run: cargo build
+
+    - name: Build Release
+      run: cargo build --release
+
+    - name: Run Tests
+      run: cargo test --all
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: sidozdev-release
+        path: target/release/sidozdev.exe

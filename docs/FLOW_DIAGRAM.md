@@ -1,0 +1,255 @@
+# Sidozdev Flow Diagrams
+
+## Application Startup Flow
+
+```
+┌─────────┐    ┌──────────────┐    ┌─────────────┐    ┌──────────────┐
+│  Start  │───→│ Init Logging │───→│ Load Config │───→│ Create State │
+└─────────┘    └──────────────┘    └─────────────┘    └──────────────┘
+                                                            │
+                                                            ▼
+┌─────────┐    ┌──────────────┐    ┌─────────────┐    ┌──────────────┐
+│  Run UI │←───│ Process Loop │←───│ Init Events │←───│ Start Worker │
+└─────────┘    └──────────────┘    └─────────────┘    └──────────────┘
+```
+
+## Device Enumeration Flow
+
+```
+┌─────────────┐    ┌──────────────┐    ┌────────────────────┐
+│ User Clicks │───→│ Send Refresh │───→│ Worker Receives    │
+│   Refresh   │    │   Command    │    │ RefreshDevices Cmd │
+└─────────────┘    └──────────────┘    └────────────────────┘
+                                                │
+                                                ▼
+┌─────────────┐    ┌──────────────┐    ┌────────────────────┐
+│ UI Updates  │←───│ Send Events  │←───│ SetupDiGetClassDevs│
+│   List      │    │  to UI       │    │ Enumerate Devices  │
+└─────────────┘    └──────────────┘    └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ Filter USB Devices │
+                                       │ Get Device Info    │
+                                       │ Get Geometry       │
+                                       └────────────────────┘
+```
+
+## ISO Selection Flow
+
+```
+┌─────────────┐    ┌──────────────┐    ┌────────────────────┐
+│ User Clicks │───→│ File Dialog │───→│ Worker Receives    │
+│   Browse    │    │   Opens     │    │ SelectIso Command  │
+└─────────────┘    └──────────────┘    └────────────────────┘
+                                                │
+                                                ▼
+┌─────────────┐    ┌──────────────┐    ┌────────────────────┐
+│ UI Displays │←───│ Send Events  │←───│ Parse ISO Header   │
+│  ISO Info   │    │  to UI       │    │ Detect Type        │
+└─────────────┘    └──────────────┘    └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ Extract Metadata   │
+                                       │ (Label, Size, Boot)│
+                                       └────────────────────┘
+```
+
+## Write Operation Flow
+
+```
+┌─────────────┐    ┌──────────────┐    ┌────────────────────┐
+│ User Clicks │───→│ Validate     │───→│ Send StartWrite    │
+│   Start     │    │   Inputs     │    │ Command to Worker  │
+└─────────────┘    └──────────────┘    └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ Create Partitions   │
+                                       │ (MBR/GPT)          │
+                                       └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ Format Device       │
+                                       │ (FAT32/NTFS/exFAT) │
+                                       └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ Write ISO Data      │
+                                       │ (4MB chunks)         │
+                                       │ ↓ Progress Updates  │
+                                       │ ↓ Speed/ETA         │
+                                       │ ↓ Cancellation Check│
+                                       └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ Install Bootloader  │
+                                       │ (BIOS/UEFI)        │
+                                       └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ Verify Write        │
+                                       │ (if enabled)       │
+                                       └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ Send Completion     │
+                                       │ or Error Event     │
+                                       └────────────────────┘
+```
+
+## Cancellation Flow
+
+```
+┌─────────────┐    ┌──────────────┐    ┌────────────────────┐
+│ User Clicks │───→│ Set Cancel   │───→│ Worker Checks Flag │
+│   Cancel    │    │   Flag       │    │ (AtomicBool)       │
+└─────────────┘    └──────────────┘    └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ Stop Current Op     │
+                                       │ (at next chunk)    │
+                                       └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ Cleanup Resources   │
+                                       │ Flush Buffers       │
+                                       └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ Send Cancelled      │
+                                       │ Event to UI        │
+                                       └────────────────────┘
+```
+
+## Hash Verification Flow
+
+```
+┌─────────────┐    ┌──────────────┐    ┌────────────────────┐
+│ User Clicks │───→│ Send Verify  │───→│ Worker Calculates  │
+│  Hash Btn   │    │ Hash Command │    │ Hash (MD5/SHA1/256)│
+└─────────────┘    └──────────────┘    └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ Read File in Chunks │
+                                       │ (8KB buffer)       │
+                                       │ Update Hasher      │
+                                       └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ Finalize Hash       │
+                                       │ Format as Hex      │
+                                       └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ Send Result to UI   │
+                                       │ Display in ISO Panel│
+                                       └────────────────────┘
+```
+
+## Error Handling Flow
+
+```
+┌─────────────┐    ┌──────────────┐    ┌────────────────────┐
+│   Error     │───→│ Log Error    │───→│ Send Error Event   │
+│  Occurs     │    │   Details    │    │ to UI (with msg)   │
+└─────────────┘    └──────────────┘    └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ Reset State         │
+                                       │ is_running = false │
+                                       │ phase = Error      │
+                                       └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ UI Shows Dialog     │
+                                       │ User Dismisses     │
+                                       │ Return to Idle     │
+                                       └────────────────────┘
+```
+
+## Theme Switching Flow
+
+```
+┌─────────────┐    ┌──────────────┐    ┌────────────────────┐
+│ User Selects│───→│ Update State │───→│ Apply Visuals to  │
+│   Theme     │    │   theme      │    │ egui Context       │
+└─────────────┘    └──────────────┘    └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ Save Config         │
+                                       │ (JSON file)        │
+                                       └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ Request Repaint     │
+                                       │ UI Updates Colors  │
+                                       └────────────────────┘
+```
+
+## Language Switching Flow
+
+```
+┌─────────────┐    ┌──────────────┐    ┌────────────────────┐
+│ User Selects│───→│ Init Trans   │───→│ Load Translation   │
+│  Language   │    │   Strings    │    │ (AR or EN)         │
+└─────────────┘    └──────────────┘    └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ Save Config         │
+                                       │ (language setting) │
+                                       └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ Request Repaint     │
+                                       │ All UI Text Updates│
+                                       └────────────────────┘
+```
+
+## Settings Persistence Flow
+
+```
+┌─────────────┐    ┌──────────────┐    ┌────────────────────┐
+│   Setting   │───→│ Update State │───→│ Serialize to JSON  │
+│   Changed   │    │   Value      │    │ (serde_json)       │
+└─────────────┘    └──────────────┘    └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ Write to Config Dir │
+                                       │ %APPDATA%/sidozdev/│
+                                       └────────────────────┘
+```
+
+## Log Export Flow
+
+```
+┌─────────────┐    ┌──────────────┐    ┌────────────────────┐
+│ User Clicks │───→│ Save Dialog  │───→│ Format Log Entries │
+│  Save Logs  │    │   Opens      │    │ (timestamp + level)│
+└─────────────┘    └──────────────┘    └────────────────────┘
+                                                │
+                                                ▼
+                                       ┌────────────────────┐
+                                       │ Write to File       │
+                                       │ (.log or .txt)     │
+                                       └────────────────────┘
+```
